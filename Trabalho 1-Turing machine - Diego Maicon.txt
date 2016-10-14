@@ -1,0 +1,460 @@
+﻿;Author: Diego Maicon Silva
+;Disciplina: Teoria da Computação
+;Professores: Walace Rodrigues
+;Atividade: 1º Trabalho Prático 
+
+; Máquina de Turing, para resolver operações de soma, subtração e multiplicação de inteiros binários.
+; Máquina só funciona com números iguais de bits, dos dois lados.
+
+
+;ESTADO 0 Estado inicial
+0 * * r 0
+0 = = r 1
+0 x x l mult ;Vai para multiplicador
+
+;ESTADO 1
+1 _ 0 l 2  ; Mudar 0 para espaço se for aparecer Carry ou não.
+
+;ESTADO 2
+2 X X l mult11 ;Vai para autômato de multiplicação
+2 * * l 2
+2 _ _ r 3
+2 V * r 3
+2 F * r 3
+
+;ESTADO 3
+3 1 V r 4
+3 0 F r 4
+3 + + r 5  ;Vai para o somador
+3 - - r 14 ;Vai para subtrator
+
+;ESTADO 4
+4 * * r 4
+4 _ 0 l 2
+
+;###########################################################################################
+;Somador de bits com quantidade iguais de bits. Ex: 1011+1110=
+
+;ESTADO 5 
+5 1 V r 5
+5 0 F r 5
+5 = = l 6
+
+;ESTADO 6
+6 + + l 6
+6 v v l 6
+6 f f l 6
+6 V v l 7v
+6 F f l 7f
+6 _ _ r 12
+
+;ESTADO 7v
+7v V V l 7v
+7v F F l 7v
+7v v v l 7v
+7v f f l 7v
+7v + + l 8v 
+
+;ESTADO 7f
+7f V V l 7f
+7f F F l 7f
+7f v v l 7f
+7f f f l 7f
+7f + + l 8f
+
+
+;ESTADO 8v
+8v V v r 8vv
+8v F f r 8fv
+8v * * l 8v
+
+;ESTADO 8f
+8f v v l 8f
+8f f f l 8f
+8f V v r 8fv
+8f F f r 8ff
+
+;ESTADO 8vv
+8vv * * r 8vv
+8vv _ _ l 9vv
+8vv = = r 11vv
+
+;ESTADO 8fv
+8fv * * r 8fv
+8fv _ _ l 9fv
+8fv = = r 11fv
+
+;ESTADO 8ff
+8ff * * r 8ff
+8ff _ _ l 9ff
+8ff = = r 11ff
+
+;ESTADO 9vv
+9vv 0 f l 10v
+9vv 1 v l 10v
+
+;ESTADO 9fv
+9fv 0 v l 10f
+9fv 1 f l 10v
+
+;ESTADO 9ff
+9ff 0 f l 10f
+9ff 1 v l 10f
+
+;ESTADO 10v
+10v 0 1 l 10
+10v * * l 10
+
+;ESTADO 10f
+10f 0 0 l 10
+10f * * l 10
+
+;ESTADO 10
+10 * * l 10
+10 v v l 6
+10 f f l 6
+
+;ESTADO 11fv
+11fv * * r 11fv
+11fv v v l 9fv
+11fv f f l 9fv
+11fv _ _ l 9fv
+
+;ESTADO 11vv
+11vv * * r 11vv
+11vv v v l 9vv
+11vv f f l 9vv
+11vv _ _ l 9vv
+
+;ESTADO 11ff
+11ff * * r 11ff
+11ff v v l 9ff
+11ff f f l 9ff
+11ff _ _ l 9ff
+
+;ESTADO 12
+12 f 0 r 12
+12 v 1 r 12
+12 * * r 12
+12 _ * * halt
+
+;###########################################################################################
+;Subtrator de bits com quantidade iguais de bits. Ex: 1011-1110=
+
+;Estado 14
+14 1 V r 14
+14 0 F r 14
+14 = = l sub6
+
+;Estado sub6
+sub6 - - l sub6
+sub6 v v l sub6
+sub6 f f l sub6
+sub6 V v l sub7v
+sub6 F f l sub7f
+sub6 _ _ r 12
+
+;ESTADO sub7v
+sub7v V V l sub7v
+sub7v F F l sub7v
+sub7v v v l sub7v
+sub7v f f l sub7v
+sub7v - - l sub8v 
+
+;ESTADO sub7f
+sub7f V V l sub7f
+sub7f F F l sub7f
+sub7f v v l sub7f
+sub7f f f l sub7f
+sub7f - - l sub8f
+
+;ESTADO sub8v
+sub8v V v r sub8vv
+sub8v F v * sub8fv
+sub8v * * l sub8v
+
+;ESTADO sub8f
+sub8f v v l sub8f
+sub8f f f l sub8f
+sub8f V v r sub8vf
+sub8f F f r sub8ff
+
+;Estado sub8vf
+sub8vf * * r sub8vf
+sub8vf _ _ l sub9vf
+sub8vf = = r sub11vf
+
+;ESTADO sub8vv
+sub8vv * * r sub8vv
+sub8vv _ _ l sub9vv
+sub8vv = = r sub11vv
+
+;ESTADO sub8fv
+sub8fv v v l sub8fvv
+sub8fv V F r sub8fvV ;Pega Bit emprestado
+sub8fv * * r sub8fvV
+sub8fv _ _ l su9fv
+sub8fv = = r sub11fv
+
+;ESTADO sub8fvv
+sub8fvv V F r sub8fvV
+sub8fvv _ _ r sub8fvV
+
+;ESTADO sub8fvV
+sub8fvV * * r sub8fvV
+sub8fvV _ _ l sub9fv
+sub8fvV = = r sub11fv
+
+;ESTADO sub8ff
+sub8ff * * r sub8ff
+sub8ff _ _ l sub9ff
+sub8ff = = r sub11ff
+
+;-------------------------
+;Coloca resultado 
+;ESTADO sub9vv
+sub9vv 0 f l sub10v
+
+;ESTADO sub9vf
+sub9vf 0 v l sub10f 
+
+;ESTADO sub9fv
+sub9fv 0 f l sub10fv
+sub9fv 1 f l sub10fv
+
+;ESTADO 9ff
+sub9ff 0 f l sub10f
+sub9ff 1 v l sub10f
+
+;-----------------------
+
+;ESTADO sub11fv
+sub11fv * * r sub11fv
+sub11fv v v l sub9fv
+sub11fv f f l sub9fv
+sub11fv _ _ l sub9fv
+
+;ESTADO sub11vf
+sub11vf * * r sub11vf
+sub11vf v v l sub9vf
+sub11vf f f l sub9vf
+sub11vf _ _ l sub9vf
+
+;ESTADO sub11vv
+sub11vv * * r sub11vv
+sub11vv v v l sub9vv
+sub11vv f f l sub9vv
+sub11vv _ _ l sub9vv
+
+;ESTADO sub11ff
+sub11ff * * r sub11ff
+sub11ff v v l sub9ff
+sub11ff f f l sub9ff
+sub11ff _ _ l sub9ff
+
+;ESTADO sub10v
+sub10v 0 0 l sub10
+sub10v * * l sub10
+
+;ESTADO sub10f
+sub10f 0 0 l sub10
+sub10f * * l sub10
+
+;ESTADO sub10fv
+sub10fv 0 1 l sub10
+sub10fv * * l sub10
+
+;ESTADO sub10
+sub10 * * l sub10
+sub10 v v l sub6
+sub10 f f l sub6
+
+;###########################################################################################
+;Multiplicador de bits com quantidade iguais de bits. Ex: 1011x1110=
+;Adaptado do morphett.
+
+mult * * r mult
+mult = _ l mult92
+
+mult92 * * l mult92
+mult92 _ _ * mult1 
+
+mult1 _ _ l mult2
+mult2 _ 0 r mult3
+mult3 _ _ r mult10
+
+;Escolha lado ff num1
+
+mult10 x x l mult11
+mult10 0 0 r mult10
+mult10 1 1 r mult10
+
+;Se o último dígito ff num1 vs 0, multiplique num2 por 2
+mult11 0 F r mult20
+;Se o último dígito ff num1 vs 1, adicione num2 a concordância e depois multiplicar num2 por 2
+mult11 1 V r mult30
+
+;multicar num2 por 2
+mult20 _ _ r mult20
+mult20 V V r mult20
+mult20 F F r mult20
+mult20 * * r mult21
+
+mult21 _ 0 l mult25 ;multiplicação por 2 fazer, o retorno se num1 final ff 
+mult21 * * r mult21
+
+mult25 x x l mult26
+mult25 * * l mult25
+
+mult26 _ _ r mult80 ;Fim da multiplicação.
+mult26 F F l mult26
+mult26 V V l mult26
+mult26 0 0 * mult11
+mult26 1 1 * mult11
+
+; Add num2 tf tally
+mult30 F F r mult30
+mult30 V V r mult30
+mult30 * * r mult31
+
+mult31 _ _ l mult32
+mult31 * * r mult31
+mult32 0 f l mult40 ; Asiciona zero
+mult32 1 v l mult50 ; Adiciona um
+mult32 f f l mult32
+mult32 v v l mult32
+mult32 x x r mult70 ; Fim da Adição
+
+; Adicionando a 0 se
+
+mult40 x x l mult41
+mult40 * * l mult40 ; Encontrado num2 final ff
+
+mult41 _ _ l mult41
+mult41 * * l mult42 ; Encontrado num2 inicio ff
+
+mult42 _ _ l mult43 ; Encontrado num2 final ff
+mult42 * * l mult42
+
+mult43 f f l mult43
+mult43 v v l mult43
+mult43 0 f r mult44
+mult43 1 v r mult44
+mult43 _ f r mult44
+
+mult44 _ _ r mult45
+mult44 * * r mult44
+
+mult45 _ _ r mult45
+mult45 * * r mult46 
+
+mult46 x x r mult47 ; encontrando final ff num1
+mult46 * * r mult46
+
+mult47 _ _ r mult47
+mult47 * * r mult48
+
+mult48 _ _ l mult32 ; encontrando final ff num2
+mult48 * * r mult48
+
+
+mult50 x x l mult51
+mult50 * * l mult50
+
+mult51 _ _ l mult51
+mult51 * * l mult52 
+
+mult52 _ _ l mult53 
+mult52 * * l mult52
+
+mult53 f f l mult53
+mult53 v v l mult53
+mult53 _ v r mult55
+mult53 0 v r mult55 ; retorno se num2
+mult53 1 f l mult54
+
+mult54 0 1 r mult55
+mult54 1 0 l mult54
+mult54 _ 1 r mult55
+
+mult55 _ _ r mult56
+mult55 * * r mult55
+
+mult56 _ _ r mult56
+mult56 * * r mult57
+
+mult57 x x r mult58 
+mult57 * * r mult57
+
+mult58 _ _ r mult58
+mult58 * * r mult59
+
+mult59 _ _ l mult32 
+mult59 * * r mult59
+
+; Terminar de adicionar, limpar
+mult70 v 1 r mult70
+mult70 f 0 r mult70
+mult70 _ _ l mult71
+
+mult71 x x l mult72 
+mult71 * * l mult71
+
+mult72 _ _ l mult72
+mult72 * * l mult73 
+
+mult73 _ _ l mult74
+mult73 * * l mult73
+
+mult74 f 0 l mult74
+mult74 v 1 l mult74
+mult74 * * r mult75 ; Finalizando limpeza registro
+
+mult75 _ _ r mult76
+mult75 * * r mult75
+
+mult76 x x r mult20 ; 
+mult76 * * r mult76
+
+;Finalizando Multiplicação
+mult80 V 1 r mult83
+mult80 F 0 r mult83
+mult80 1 1 r mult80
+mult80 0 0 r mult80
+mult80 x x r mult81
+
+mult81 _ = l mult82
+mult81 1 1 r mult81
+mult81 0 0 r mult81
+mult81 v 1 r mult81
+mult81 f 0 r mult81
+
+mult82 * * l mult82
+mult82 _ _ l mult86
+
+mult83 * * r mult83
+mult83 _ _ l mult84
+
+mult84 * _ l mult85
+
+mult85 * * l mult85
+mult85 _ _ r mult80
+
+mult86 * * l mult86
+mult86 _ _ r mult87
+
+mult87 1 _ r mult88
+mult87 0 _ r mult89
+mult87 _ _ r halted
+
+mult88 * * r mult88
+mult88 = = r mult90
+
+mult89 * * r mult89
+mult89 = = r mult91
+
+mult90 _ 1 l mult82
+mult90 * * r mult90
+
+mult91 _ 0 l mult82
+mult91 * * r mult91
